@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- [Previous head content remains the same] -->
+    <style>
+        /* [Previous styles remain the same] */
+        
+        /* Hangman Game Specific Styles */
+        .hangman-word {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .hangman-letter {
+            width: 40px;
+            height: 50px;
+            border-bottom: 2px solid #333;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+        }
+        .hangman-letters {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .hangman-letter-btn {
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .hangman-letter-btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .hangman-drawing {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .hangman-drawing div {
+            position: absolute;
+            background-color: black;
+        }
+        .hangman-gallows {
+            width: 200px;
+            height: 10px;
+            bottom: 0;
+        }
+        .hangman-pole {
+            width: 10px;
+            height: 180px;
+            left: 95px;
+        }
+        .hangman-top {
+            width: 80px;
+            height: 10px;
+            left: 15px;
+            top: 0;
+        }
+        .hangman-rope {
+            width: 2px;
+            height: 30px;
+            left: 105px;
+            top: 10px;
+        }
+        .hangman-head {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid black;
+            left: 90px;
+            top: 40px;
+        }
+        .hangman-body {
+            width: 2px;
+            height: 60px;
+            left: 105px;
+            top: 70px;
+        }
+        .hangman-left-arm {
+            width: 40px;
+            height: 2px;
+            transform: rotate(45deg);
+            left: 65px;
+            top: 100px;
+        }
+        .hangman-right-arm {
+            width: 40px;
+            height: 2px;
+            transform: rotate(-45deg);
+            left: 105px;
+            top: 100px;
+        }
+        .hangman-left-leg {
+            width: 40px;
+            height: 2px;
+            transform: rotate(-45deg);
+            left: 65px;
+            top: 130px;
+        }
+        .hangman-right-leg {
+            width: 40px;
+            height: 2px;
+            transform: rotate(45deg);
+            left: 105px;
+            top: 130px;
+        }
+    </style>
+</head>
+<body class="hero" id="root">
+    <div class="backgroundCharacter" id="grid">
+        <div id="app" class="slider">
+            <div v-if="currentScreen === 'start'">
+                <h1>Browser Game Site</h1>
+                <button @click="startLoading" class="game-button">Start Games</button>
+            </div>
+
+            <div v-else-if="currentScreen === 'loading'" class="loading">
+                <div class="content">
+                    <div class="pill">
+                        <div class="medicine">
+                            <i></i><i></i><i></i>
+                            <i></i><i></i><i></i>
+                            <i></i><i></i><i></i>
+                            <i></i><i></i><i></i>
+                            <i></i><i></i><i></i>
+                            <i></i><i></i><i></i>
+                            <i></i><i></i>
+                            <div class="side"></div>
+                            <div class="side"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else-if="currentScreen === 'game-menu'">
+                <h2>Select a Game</h2>
+                <div class="game-menu">
+                    <button @click="startTicTacToe" class="game-button">Tic Tac Toe</button>
+                    <button @click="startHangman" class="game-button">Hangman</button>
+                </div>
+            </div>
+
+            <div v-else-if="currentScreen === 'tic-tac-toe'">
+                <h2>Tic Tac Toe</h2>
+                <div class="tic-tac-toe">
+                    <div 
+                        v-for="(cell, index) in board" 
+                        :key="index" 
+                        class="tic-tac-toe-cell"
+                        @click="makeMove(index)"
+                    >
+                        {{ cell }}
+                    </div>
+                </div>
+                <p>{{ gameStatus }}</p>
+                <button @click="resetGame" class="game-button">Reset Game</button>
+                <button @click="returnToGameMenu" class="game-button">Back to Game Menu</button>
+            </div>
+
+            <div v-else-if="currentScreen === 'hangman'">
+                <h2>Hangman</h2>
+                <div class="hangman-drawing">
+                    <div v-if="wrongGuesses >= 1" class="hangman-gallows"></div>
+                    <div v-if="wrongGuesses >= 2" class="hangman-pole"></div>
+                    <div v-if="wrongGuesses >= 3" class="hangman-top"></div>
+                    <div v-if="wrongGuesses >= 4" class="hangman-rope"></div>
+                    <div v-if="wrongGuesses >= 5" class="hangman-head"></div>
+                    <div v-if="wrongGuesses >= 6" class="hangman-body"></div>
+                    <div v-if="wrongGuesses >= 7" class="hangman-left-arm"></div>
+                    <div v-if="wrongGuesses >= 8" class="hangman-right-arm"></div>
+                    <div v-if="wrongGuesses >= 9" class="hangman-left-leg"></div>
+                    <div v-if="wrongGuesses >= 10" class="hangman-right-leg"></div>
+                </div>
+
+                <div class="hangman-word">
+                    <div 
+                        v-for="(letter, index) in displayWord" 
+                        :key="index" 
+                        class="hangman-letter"
+                    >
+                        {{ letter }}
+                    </div>
+                </div>
+
+                <p>{{ hangmanStatus }}</p>
+
+                <div class="hangman-letters">
+                    <button 
+                        v-for="letter in alphabet" 
+                        :key="letter"
+                        @click="guessLetter(letter)"
+                        :disabled="usedLetters.includes(letter)"
+                        class="hangman-letter-btn"
+                    >
+                        {{ letter }}
+                    </button>
+                </div>
+
+                <div>
+                    <button @click="resetHangman" class="game-button">Reset Game</button>
+                    <button @click="returnToGameMenu" class="game-button">Back to Game Menu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./main.js"></script>
+
+    <script>
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                const currentScreen = ref('start');
+                const board = ref(Array(9).fill(''));
+                const currentPlayer = ref('X');
+                const gameStatus = ref('Player X\'s Turn');
+
+                // Hangman Game Logic
+                const words = [
+                    'JAVASCRIPT', 'PYTHON', 'PROGRAMMING', 
+                    'COMPUTER', 'DEVELOPER', 'ALGORITHM', 
+                    'WEBSITE', 'FUNCTION', 'VARIABLE'
+                ];
+                const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+                const selectedWord = ref('');
+                const usedLetters = ref([]);
+                const wrongGuesses = ref(0);
+                const hangmanStatus = ref('');
+
+                const displayWord = computed(() => {
+                    return selectedWord.value.split('').map(letter => 
+                        usedLetters.value.includes(letter) ? letter : '_'
+                    );
+                });
+
+                function startHangman() {
+                    currentScreen.value = 'hangman';
+                    resetHangman();
+                }
+
+                function resetHangman() {
+                    selectedWord.value = words[Math.floor(Math.random() * words.length)];
+                    usedLetters.value = [];
+                    wrongGuesses.value = 0;
+                    hangmanStatus.value = 'Guess the word!';
+                }
+
+                function guessLetter(letter) {
+                    if (usedLetters.value.includes(letter)) return;
+
+                    usedLetters.value.push(letter);
+
+                    if (!selectedWord.value.includes(letter)) {
+                        wrongGuesses.value++;
+                    }
+
+                    // Check win condition
+                    if (displayWord.value.join('') === selectedWord.value) {
+                        hangmanStatus.value = 'You Win! 🎉';
+                    }
+
+                    // Check lose condition
+                    if (wrongGuesses.value >= 10) {
+                        hangmanStatus.value = `Game Over! The word was ${selectedWord.value}`;
+                    }
+                }
+
+                // Tic Tac Toe Game Logic (previous implementation remains the same)
+                function startLoading() {
+                    currentScreen.value = 'loading';
+                    setTimeout(() => {
+                        currentScreen.value = 'game-menu';
+                    }, 10000);
+                }
+
+                // ... [rest of the Tic Tac Toe functions remain the same]
+
+                function returnToGameMenu() {
+                    currentScreen.value = 'game-menu';
+                }
+
+                return {
+                    // Tic Tac Toe Returns
+                    currentScreen,
+                    board,
+                    gameStatus,
+                    startLoading,
+                    startTicTacToe: () => {
+                        currentScreen.value = 'tic-tac-toe';
+                        resetGame();
+                    },
+                    makeMove,
+                    resetGame,
+
+                    // Hangman Returns
+                    startHangman,
+                    resetHangman,
+                    guessLetter,
+                    words,
+                    alphabet,
+                    selectedWord,
+                    usedLetters,
+                    wrongGuesses,
+                    hangmanStatus,
+                    displayWord,
+
+                    // Shared
+                    returnToGameMenu
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

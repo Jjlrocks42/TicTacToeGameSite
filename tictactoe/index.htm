@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title class="header">Browser Game Site</title>
+
+    <script>
+        function setupBackgroundSlideshow(imagePath = './') {
+            // Select the body element for background manipulation
+            const body = document.body;
+            
+            // Create two background layers for smooth transitions
+            const bgLayer1 = document.createElement('div');
+            const bgLayer2 = document.createElement('div');
+            
+            // Set initial styling for background layers
+            const backgroundLayerStyle = {
+                position: 'fixed',
+                top: '0',
+                left: '0',
+                width: '100%',
+                height: '100%',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                transition: 'opacity 1.5s ease-in-out',
+                zIndex: '-1'
+            };
+            
+            Object.assign(bgLayer1.style, backgroundLayerStyle);
+            Object.assign(bgLayer2.style, backgroundLayerStyle);
+            
+            // Initially hide the second layer
+            bgLayer2.style.opacity = '0';
+            
+            // Append layers to body
+            body.appendChild(bgLayer1);
+            body.appendChild(bgLayer2);
+            
+            // Remove original body background styles
+            body.style.backgroundImage = 'none';
+            body.style.backgroundColor = 'black';
+            
+            // Function to get all images from a directory
+            async function getImagesFromDirectory(path) {
+                try {
+                    // In a browser environment, you'll need to manually list your images
+                    const imageList = [
+                        '1303457.jpg',
+                        '1326045.jpeg',
+                        '1330031.jpeg',
+                        '1337222.jpeg',
+                        '1341703.jpeg',
+                        '1343273.png',
+                        '1344447.png',
+                        '1354176.jpeg',
+                        '1354206.jpeg',
+                        '1354305.jpeg',
+                        '1355020.jpeg',
+                        '1358515.png',
+                        '383596-final.jpeg',
+                        '1336951.png',
+                        'spring-cherry-blossom.gif'
+                    ];
+                    
+                    // Map image names to full paths
+                    return imageList.map(img => `${path}${img}`);
+                } catch (error) {
+                    console.error('Error getting images:', error);
+                    return [];
+                }
+            }
+            
+            // Preload images to prevent flickering
+            async function preloadImages(images) {
+                const imageObjects = images.map(src => {
+                    const img = new Image();
+                    img.src = src;
+                    return img;
+                });
+                
+                // Wait for all images to load
+                await Promise.all(imageObjects.map(img => 
+                    new Promise(resolve => {
+                        img.onload = resolve;
+                        img.onerror = resolve;
+                    })
+                ));
+                
+                return images;
+            }
+            
+            // Smoothly transition backgrounds
+            async function startSlideshow() {
+                const images = await getImagesFromDirectory(imagePath);
+                const preloadedImages = await preloadImages(images);
+                
+                let currentIndex = 0;
+                
+                function changeBackground() {
+                    // Alternate between two layers for smooth transition
+                    const activeLayer = currentIndex % 2 === 0 ? bgLayer1 : bgLayer2;
+                    const inactiveLayer = currentIndex % 2 === 0 ? bgLayer2 : bgLayer1;
+                    
+                    // Set new background
+                    activeLayer.style.backgroundImage = `url('${preloadedImages[currentIndex]}')`;
+                    activeLayer.style.opacity = '1';
+                    inactiveLayer.style.opacity = '0';
+                    
+                    // Update index, loop back to start if needed
+                    currentIndex = (currentIndex + 1) % preloadedImages.length;
+                }
+                
+                // Initial background
+                bgLayer1.style.backgroundImage = `url('${preloadedImages[0]}')`;
+                
+                // Change background every 10 seconds
+                setInterval(changeBackground, 10000);
+            }
+            
+            // Start the slideshow
+            startSlideshow();
+        }
+
+        // Call the function when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setupBackgroundSlideshow('./');  // Pass your image directory path
+        });
+    </script>
+
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const updateCursor = ({ x, y }) => {
+            document.documentElement.style.setProperty('--x', x)
+            document.documentElement.style.setProperty('--y', y)
+            }
+
+            document.body.addEventListener('pointermove', updateCursor)
+
+        })
+
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.15/vue.global.min.js"></script>
+
+    <link rel="stylesheet" href="./styles.css" />
+
+
+
+    <script
+    type="text/javascript"
+    src="https://code.jquery.com/jquery-3.2.1.min.js"
+  ></script>
+  <!-- Include TweenMax library -->
+  <script src="https://unpkg.com/gsap@3.9.0/dist/gsap.min.js"></script>
+  <script
+    src="http://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TweenMax.min.js"
+    integrity="sha256-lPE3wjN2a7ABWHbGz7+MKBJaykyzqCbU96BJWjio86U="
+    crossorigin="anonymous"
+  ></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TimelineMax.min.js"
+    integrity="sha256-fIkQKQryItPqpaWZbtwG25Jp2p5ujqo/NwJrfqAB+Qk="
+    crossorigin="anonymous"
+  ></script>
+</head>
+<body class="hero" id="root">
+        
+
+    <div class="backgroundCharacter" id="grid">
+                
+        
+        <div id="app" class="slider">
+                    <div v-if="currentScreen === 'start'">
+                        <div class="card">
+                            <h1>Browser Game Site</h1>
+                        
+                            <button @click="startLoading" class="game-button">Start Games</button>
+                        </div>
+                    </div>
+
+                    <div v-else-if="currentScreen === 'loading'" class="loading">
+                        <!-- <div class="loading-spinner"></div> -->
+                        <div class="content">
+                            <div class="pill">
+                                <div class="medicine">
+                                    <i></i><i></i><i></i>
+                                    <i></i><i></i><i></i>
+                                    <i></i><i></i><i></i>
+                                    <i></i><i></i><i></i>
+                                    <i></i><i></i><i></i>
+                                    <i></i><i></i><i></i>
+                                    <i></i><i></i>
+                                    <div class="side"></div>
+                                    <div class="side"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div v-else-if="currentScreen === 'game-menu'">
+                        <div class="card">
+                            <h2>Select a Game</h2>
+                        
+                            <div class="game-menu">
+                                <button @click="startTicTacToe" class="game-button">Tic Tac Toe</button>
+                                <button class="game-button" disabled>More Games Coming Soon</button>
+                                <button @click="startHangman" class="game-button">Hangman</button>
+                                <button @click="startChess" class="game-button">Chess</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-else-if="currentScreen === 'tic-tac-toe'">
+                        <div class="card">
+                            <h2>Tic Tac Toe</h2>
+                        
+                            <div class="tic-tac-toe">
+                                <div 
+                                    v-for="(cell, index) in board" 
+                                    :key="index" 
+                                    class="tic-tac-toe-cell"
+                                    @click="makeMove(index)"
+                                >
+                                    {{ cell }}
+                                </div>
+                            </div>
+                        
+                            <p>{{ gameStatus }}</p>
+                            <button @click="resetGame" class="game-button">Reset Game</button>
+                            <button @click="returnToGameMenu" class="game-button">Back to Game Menu</button>
+                        </div>
+                    </div>
+
+                    <div v-else-if="currentScreen === 'hangman'">
+                        <div class="card">
+                            <h2>Hangman</h2>
+                        
+                            <div class="hangman-attempts">
+                                Attempts Left: {{ hangmanAttempts }}
+                            </div>
+                            <div class="hangman-word">
+                                <div 
+                                    v-for="(letter, index) in displayWord" 
+                                    :key="index" 
+                                    class="hangman-letter"
+                                >
+                                    {{ letter }}
+                                </div>
+                            </div>
+                            <div class="hangman-letters">
+                                <button 
+                                    v-for="letter in alphabet" 
+                                    :key="letter"
+                                    class="hangman-letter-btn"
+                                    @click="guessLetter(letter)"
+                                    :disabled="usedLetters.includes(letter)"
+                                >
+                                    {{ letter }}
+                                </button>
+                            </div>
+                            <div v-if="hangmanStatus" class="hangman-status">
+                                {{ hangmanStatus }}
+                            </div>
+                            <button @click="returnToGameMenu" class="game-button">Back to Game Menu</button>
+                        </div>
+                    </div>
+
+                    <div v-else-if="currentScreen === 'chess'">
+                        <div class="card">
+                            <h2>Chess</h2>
+                            <p>{{ chessStatus }}</p>
+                            <div class="chess-board">
+                                <div 
+                                    v-for="(square, index) in chessBoard" 
+                                    :key="index"
+                                    :class="['chess-square', getSquareColor(index), {
+                                        'selected': selectedPiece === index,
+                                        'valid-move': validMoves.includes(index)
+                                    }]"
+                                    @click="handleChessMove(index)"
+                                >
+                                    {{ square }}
+                                </div>
+                            </div>
+                            <button @click="resetChess" class="game-button">Reset Game</button>
+                            <button @click="returnToGameMenu" class="game-button">Back to Game Menu</button>
+                        </div>
+                    </div>
+
+            </div>
+
+    </div>
+   
+
+    <script src="./main.js"></script>
+
+
+
+
+
+
+    <script src="./Chess.js"></script>
+    <script src="./GameLogic.js"></script>
+</body>
+</html>
